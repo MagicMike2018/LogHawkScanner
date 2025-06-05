@@ -1,0 +1,99 @@
+import re
+import sys
+from collections import defaultdict
+
+# === CONFIGURATION ===
+# Hardcoded log file (We can replace this with user input later if needed)
+LOG_FILE = "auth.log"
+
+# === PATTERNS TO SEARCH ===
+PATTERNS = {
+    "Failed SSH Login": re.compile(r"Failed password for .* from (\d+\.\d+\.\d+\.\d+)"),
+    "Accepted SSH Login": re.compile(r"Accepted password for .* from (\d+\.\d+\.\d+\.\d+)"),
+    "Invalid User": re.compile(r"Failed password for invalid user .* from (\d+\.\d+\.\d+\.\d+)"),
+    "HTTP 401 Unauthorized": re.compile(r"(\d+\.\d+\.\d+\.\d+).+\"[A-Z]+ .+\" 401"),
+    "HTTP 403 Forbidden": re.compile(r"(\d+\.\d+\.\d+\.\d+).+\"[A-Z]+ .+\" 403"),
+    "App CRITICAL Alert": re.compile(r"CRITICAL: (.+)"),
+    "App ERROR Alert": re.compile(r"ERROR: (.+)"),
+    "Suspicious CRON Job": re.compile(r"CRON\[\d+\]: \(.+\) CMD \((.+malicious\.py.+|.+malware\.py.+)\)"),
+    "Unauthorized Root Access": re.compile(r"sudo: .+ : TTY=.+ ; USER=root ; COMMAND=(.+)")
+}
+
+# === MAIN LOG SCANNER ===
+def scan_log(file_path):
+    try:
+        with open(file_path, 'r') as log:
+            lines = log.readlines()
+
+        print(f"\n--- Scan Results for {file_path} ---\n")
+        failed_logins_by_ip = defaultdict(int)
+        http_errors_by_ip = defaultdict(lambda: defaultdict(int))
+        app_alerts = defaultdict(list)
+        suspicious_cron_jobs = []
+        root_access_attempts = []
+
+        for pattern_name, regex in PATTERNS.items():
+            print(f"Pattern: {pattern_name}")
+            matches = [line.strip() for line in lines if regex.search(line)]
+            if matches:
+                for match in matches:
+                    print(f"  -> {match}")
+                    ip_match = regex.search(match)
+                    if ip_match:
+                        if "Failed" in pattern_name:
+                            ip = ip_match.group(1)
+                            failed_logins_by_ip[ip] += 1
+                        elif "HTTP" in pattern_name:
+                            ip = ip_match.group(1)
+                            http_errors_by_ip[ip][pattern_name] += 1
+                        elif "App" in pattern_name:
+                            app_alerts[pattern_name].append(ip_match.group(1))
+                        elif "CRON" in pattern_name:
+                            suspicious_cron_jobs.append(ip_match.group(1))
+                        elif "Unauthorized Root Access" in pattern_name:
+                            root_access_attempts.append(ip_match.group(1))
+            else:
+                print("  No matches found.")
+            print("")
+
+        # === BRUTE-FORCE DETECTION ===
+        print("--- Brute-force Attempt Detection ---\n")
+        for ip, count in failed_logins_by_ip.items():
+            if count >= 5:
+                print(f"ALERT: Possible brute-force attack detected from IP {ip} ({count} failed login attempts)")
+
+        # === SUSPICIOUS WEB ACCESS DETECTION ===
+        print("\n--- Suspicious Web Access Detection ---\n")
+        for ip, errors in http_errors_by_ip.items():
+            total_errors = sum(errors.values())
+            if total_errors >= 3:
+                print(f"ALERT: Multiple HTTP errors from IP {ip} ({errors})")
+
+        # === CRITICAL AND ERROR ALERTS FROM APP LOG ===
+        print("\n--- Application Alerts ---\n")
+        for level, messages in app_alerts.items():
+            for msg in messages:
+                print(f"ALERT ({level}): {msg}")
+
+        # === SUSPICIOUS CRON JOBS AND ROOT ACCESS ===
+        print("\n--- Suspicious CRON Jobs ---\n")
+        for cmd in suspicious_cron_jobs:
+            print(f"ALERT: Suspicious cron job execution: {cmd}")
+
+        print("\n--- Unauthorized Root Access Attempts ---\n")
+        for cmd in root_access_attempts:
+            print(f"ALERT: Unauthorized root command executed: {cmd}")
+
+    except FileNotFoundError:
+        print(f"Error: The file '{file_path}' does not exist.")
+
+
+# === RUN SCANNER ===
+if __name__ == "__main__":
+    # Optional: Accept file path as a command-line argument
+    if len(sys.argv) > 1:
+        log_file = sys.argv[1]
+    else:
+        log_file = LOG_FILE
+
+    scan_log(log_file)
