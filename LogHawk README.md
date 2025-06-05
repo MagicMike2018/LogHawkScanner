@@ -33,12 +33,13 @@ python3 loghawk_scanner.py auth.log
 --- Scan Results for auth.log ---
 Pattern: Failed SSH Login
   -> Feb 17 10:15:14 Failed password for invalid user admin from 192.168.1.15
-...
+
 --- Brute-force Attempt Detection ---
 ALERT: Possible brute-force attack detected from IP 203.0.113.42 (5 failed login attempts)
-...
+
 --- Application Alerts ---
 ALERT (App ERROR Alert): Payment gateway timeout
+
 --- Suspicious CRON Jobs ---
 ALERT: Suspicious cron job execution: /opt/scripts/malicious.py
 ```
