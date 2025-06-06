@@ -3,8 +3,8 @@ import sys
 from collections import defaultdict
 
 # === CONFIGURATION ===
-# Hardcoded log file (We can replace this with user input later if needed)
-LOG_FILE = "auth.log"
+# Valid log files that can be scanned
+VALID_LOG_FILES = ["auth.log", "access.log", "app.log", "system.log"]
 
 # === PATTERNS TO SEARCH ===
 PATTERNS = {
@@ -15,7 +15,7 @@ PATTERNS = {
     "HTTP 403 Forbidden": re.compile(r"(\d+\.\d+\.\d+\.\d+).+\"[A-Z]+ .+\" 403"),
     "App CRITICAL Alert": re.compile(r"CRITICAL: (.+)"),
     "App ERROR Alert": re.compile(r"ERROR: (.+)"),
-    "Suspicious CRON Job": re.compile(r"CRON\[\d+\]: \(.+\) CMD \((.+malicious\.py.+|.+malware\.py.+)\)"),
+    "Suspicious CRON Job": re.compile(r"CRON\[\d+\]: \(.+\) CMD \((.+malicious\.py|malware\.py).+\)"),
     "Unauthorized Root Access": re.compile(r"sudo: .+ : TTY=.+ ; USER=root ; COMMAND=(.+)")
 }
 
@@ -90,10 +90,9 @@ def scan_log(file_path):
 
 # === RUN SCANNER ===
 if __name__ == "__main__":
-    # Optional: Accept file path as a command-line argument
-    if len(sys.argv) > 1:
-        log_file = sys.argv[1]
-    else:
-        log_file = LOG_FILE
+    user_input = input("Enter a log file name (auth.log, access.log, app.log, system.log): ").strip()
 
-    scan_log(log_file)
+    if user_input in VALID_LOG_FILES:
+        scan_log(user_input)
+    else:
+        print("Invalid File Name!")
