@@ -33,9 +33,9 @@ def scan_log(file_path):
         root_access_attempts = []
 
         for pattern_name, regex in PATTERNS.items():
-            print(f"Pattern: {pattern_name}")
             matches = [line.strip() for line in lines if regex.search(line)]
             if matches:
+                print(f"Pattern: {pattern_name}")
                 for match in matches:
                     print(f"  -> {match}")
                     ip_match = regex.search(match)
@@ -52,37 +52,40 @@ def scan_log(file_path):
                             suspicious_cron_jobs.append(ip_match.group(1))
                         elif "Unauthorized Root Access" in pattern_name:
                             root_access_attempts.append(ip_match.group(1))
-            else:
-                print("  No matches found.")
-            print("")
+                print("")
 
         # === BRUTE-FORCE DETECTION ===
-        print("--- Brute-force Attempt Detection ---\n")
-        for ip, count in failed_logins_by_ip.items():
-            if count >= 5:
-                print(f"ALERT: Possible brute-force attack detected from IP {ip} ({count} failed login attempts)")
+        if any(count >= 5 for count in failed_logins_by_ip.values()):
+            print("--- Brute-force Attempt Detection ---\n")
+            for ip, count in failed_logins_by_ip.items():
+                if count >= 5:
+                    print(f"ALERT: Possible brute-force attack detected from IP {ip} ({count} failed login attempts)")
 
         # === SUSPICIOUS WEB ACCESS DETECTION ===
-        print("\n--- Suspicious Web Access Detection ---\n")
-        for ip, errors in http_errors_by_ip.items():
-            total_errors = sum(errors.values())
-            if total_errors >= 3:
-                print(f"ALERT: Multiple HTTP errors from IP {ip} ({errors})")
+        if any(sum(errors.values()) >= 3 for errors in http_errors_by_ip.values()):
+            print("\n--- Suspicious Web Access Detection ---\n")
+            for ip, errors in http_errors_by_ip.items():
+                total_errors = sum(errors.values())
+                if total_errors >= 3:
+                    print(f"ALERT: Multiple HTTP errors from IP {ip} ({errors})")
 
         # === CRITICAL AND ERROR ALERTS FROM APP LOG ===
-        print("\n--- Application Alerts ---\n")
-        for level, messages in app_alerts.items():
-            for msg in messages:
-                print(f"ALERT ({level}): {msg}")
+        if any(app_alerts.values()):
+            print("\n--- Application Alerts ---\n")
+            for level, messages in app_alerts.items():
+                for msg in messages:
+                    print(f"ALERT ({level}): {msg}")
 
         # === SUSPICIOUS CRON JOBS AND ROOT ACCESS ===
-        print("\n--- Suspicious CRON Jobs ---\n")
-        for cmd in suspicious_cron_jobs:
-            print(f"ALERT: Suspicious cron job execution: {cmd}")
+        if suspicious_cron_jobs:
+            print("\n--- Suspicious CRON Jobs ---\n")
+            for cmd in suspicious_cron_jobs:
+                print(f"ALERT: Suspicious cron job execution: {cmd}")
 
-        print("\n--- Unauthorized Root Access Attempts ---\n")
-        for cmd in root_access_attempts:
-            print(f"ALERT: Unauthorized root command executed: {cmd}")
+        if root_access_attempts:
+            print("\n--- Unauthorized Root Access Attempts ---\n")
+            for cmd in root_access_attempts:
+                print(f"ALERT: Unauthorized root command executed: {cmd}")
 
     except FileNotFoundError:
         print(f"Error: The file '{file_path}' does not exist.")
