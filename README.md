@@ -4,7 +4,7 @@
 
 ---
 
-## 🔍 What LogHawk Does
+##  What LogHawk Does
 LogHawk helps security teams:
 
 - Detect brute-force SSH and web login attempts
@@ -15,7 +15,7 @@ LogHawk helps security teams:
 
 ---
 
-## 🛠 Installation
+##  Installation
 Before using LogHawk, make sure you have **Python 3** installed:
 
 ```bash
@@ -30,7 +30,7 @@ cd loghawk
 
 ---
 
-## 🚀 How to Use It
+##  How to Use It
 When you run the script, you will be prompted to enter one of the following valid log files:
 
 ```
@@ -55,7 +55,7 @@ If the input is invalid, it will return:
 Invalid File Name!
 ```
 
-✅ **Only matching results will be shown** — pattern headers and detection alerts are skipped if there are no matches to reduce clutter.
+ **Only matching results will be shown** — pattern headers and detection alerts are skipped if there are no matches to reduce clutter.
 
 Expected output:
 ```
@@ -69,7 +69,7 @@ ALERT: Possible brute-force attack detected from IP 203.0.113.42 (5 failed login
 
 ---
 
-## ⏲ Automate with CRON
+##  Automate with CRON
 To run LogHawk every day using cron, add this to your crontab:
 
 ```bash
@@ -80,7 +80,7 @@ Use `crontab -e` to edit your crontab file.
 
 ---
 
-## 📂 Supported Log Types
+##  Supported Log Types
 - `auth.log` (SSH activity)
 - `access.log` (Web server access)
 - `app.log` (Application events)
@@ -88,7 +88,7 @@ Use `crontab -e` to edit your crontab file.
 
 ---
 
-## 🎯 Why Use LogHawk?
+##  Why Use LogHawk?
 - Lightweight and script-based: no heavy dependencies
 - Easy to read and extend with regex
 - Detects real-world threats your team cares about
@@ -96,10 +96,10 @@ Use `crontab -e` to edit your crontab file.
 
 ---
 
-## 📄 License
+##  License
 MIT License
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 Have an idea or want to expand the detection patterns? Contributions are welcome! Fork the repo, make your changes, and submit a pull request.
