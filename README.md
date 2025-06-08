@@ -24,7 +24,7 @@ sudo apt-get install python3
 
 Clone the repo:
 ```bash
-git clone https://github.com/your-username/loghawk.git
+git clone https://github.com/MagicMike2018/loghawk.git
 cd loghawk
 ```
 
