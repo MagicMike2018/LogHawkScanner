@@ -99,3 +99,5 @@ if __name__ == "__main__":
         scan_log(user_input)
     else:
         print("Invalid File Name!")
+# This code is a log scanner that reads specified log files and searches for patterns indicating security issues.
+# It detects failed login attempts, HTTP errors, application alerts, suspicious cron jobs, and unauthorized root access attempts.
